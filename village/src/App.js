@@ -4,6 +4,8 @@ import './App.css';
 import SmurfForm from './components/SmurfForm';
 import Smurfs from './components/Smurfs';
 
+import { Route, NavLink } from 'react-router-dom'
+
 import axios from 'axios'
 
 class App extends Component {
@@ -11,24 +13,41 @@ class App extends Component {
     super(props);
     this.state = {
       smurfs: [],
+      id: 3,
+      url:'http://localhost:3333/smurfs'
     };
+  }
+
+  addSmurf = newSmurf => {
+    let id = this.state.id + 1
+    this.setState({id: id})
+    newSmurf.id = id
+    axios 
+      .post(this.state.url, newSmurf)
+      .then(res => this.setState({smurfs: res.data}))
+      .catch(error => console.log(error))
+
   }
 
   componentDidMount(){
     axios 
-      .get('http://localhost:3333/smurfs')
+      .get(this.state.url)
       .then(res => this.setState({
         smurfs: res.data
       }))
-      .catch(err => console.log("no this is not the way" + err))
+      .catch(err => console.log("No Smurfs here Gargamel, go away" + err))
   }
 
   render() {
-    console.log(this.state.smurfs)
     return (
       <div className="App">
-        <SmurfForm />
-        <Smurfs smurfs={this.state.smurfs} />
+        <div className="Navbar">
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/smurf-form/" exact addSmurf={this.addSmurf} newSmurf={this.newSmurf}>new smurf</NavLink>
+        </div>
+
+      <Route exact path="/" render={props => <Smurfs {...props} smurfs={this.state.smurfs}/>}/>
+      <Route exact path="/smurf-form/" render={props => <SmurfForm {...props} addSmurf={this.addSmurf} newSmurf={this.newSmurf}/>}/>
       </div>
     );
   }
